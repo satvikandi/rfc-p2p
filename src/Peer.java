@@ -58,10 +58,23 @@ public class Peer {
 	 */
 	
 	public void addAllRfcs() throws Exception{
-		String filePath = new File("").getAbsolutePath();
-		System.out.println(filePath);
-		String filename = ".\\bin\\rfcs\\rfc813.txt";
-		addRfc(filename);
+		//String filePath = new File("").getAbsolutePath();
+		//System.out.println(filePath);
+		
+		File folder = new File(".//rfcs");
+		File[] listOfFiles = folder.listFiles();
+		String filename = "";
+
+		    for (int i = 0; i < listOfFiles.length; i++) {
+		    	if (listOfFiles[i].isFile()) {
+		    		filename = (".\\\\rfcs\\\\" + listOfFiles[i].getName());
+		    		addRfc(filename);
+		    	} 
+		    }
+		
+		
+		//String filename = ".\\rfcs\\rfc813.txt";
+		//addRfc(filename);
 	}
 	
 	
