@@ -4,7 +4,7 @@ import java.io.*;
 
 public class CentralServer {
 
-	LinkedList peerList;
+	LinkedList<ActivePeer> peerList;
 	LinkedList index;
 	static final int LISTENINGPORT = 7134;
 		
