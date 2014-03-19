@@ -34,6 +34,7 @@ public class CentralServer {
 		}
 	}
 	
+	//Constructor
 	public CentralServer() 
 	{
 		peerList = new LinkedList<ActivePeer>();
@@ -56,8 +57,7 @@ public class CentralServer {
 		
 	}
 	
-	public static void main(String args[]) throws Exception 
-	{
+	public void startListening() throws Exception {
 		@SuppressWarnings("resource")
 		ServerSocket welcomeSocket = new ServerSocket(LISTENINGPORT);
 		
@@ -74,6 +74,12 @@ public class CentralServer {
 			
 
 		}
+	}
+	
+	public static void main(String args[]) throws Exception 
+	{
+		CentralServer CS = new CentralServer();
+		CS.startListening();
 	}
 }
 
