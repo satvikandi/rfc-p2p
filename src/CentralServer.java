@@ -24,6 +24,11 @@ public class CentralServer {
 			this.title = title;
 			this.host = host;
 		}
+		
+	    @Override
+	    public String toString() {
+	        return rfcNum + " - " + title;
+	    }
 	}
 
 
@@ -62,7 +67,7 @@ public class CentralServer {
 				packet += clientSentence + "\n";
 			}
 			
-			//System.out.println(packet);
+			System.out.println(packet);
 			if (packet.substring(0, 3).equals("ADD")){
 				addRfc(packet);
 				//addPeer();
@@ -97,6 +102,8 @@ public class CentralServer {
 	
 		Rfc rfc = new Rfc(rfcNum, title, host);
 		index.add(rfc);
+		System.out.println("Index looks like this now:- \n");
+		System.out.println(this.index.toString());
 	}
 	
 	private void lookupRfc(String packet) {
@@ -126,7 +133,6 @@ public class CentralServer {
 	public static void main(String args[]) throws Exception {
 		CentralServer CS = new CentralServer();
 		CS.startListening();
-		System.out.println(CS.peerList.toString());
 
 	}
 }
