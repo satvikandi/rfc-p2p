@@ -1,0 +1,20 @@
+Start Listning:
+1. Listen to all the crap that's coming in. Can be fro m different peers at the same time. Assumption is that one whole packet is received at one time. 
+
+For example, we can get
+
+ADD by peer 1
+LOOKUP by peer 2
+Add by peer 3
+
+IF: This all is stored in one string. 
+
+Read line by line. 
+When you read first line, read the next three lines. Do one action. (method call based what the request type is)
+Read another line, then read the next three lines, do another action. 
+
+
+AddToIndex(String packet){
+This will be given a complete packet. 
+This will do what it's supposed to. 
+}
