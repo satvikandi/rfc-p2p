@@ -1,6 +1,5 @@
 import java.io.*;
 import java.net.Socket;
-
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -9,9 +8,7 @@ import java.util.Calendar;
 public class Peer {
 	
 	String hostname;
-	String rfcTitle;
 	String version;
-	int RFCNum;
 	int port;
 	
 	static final int SERVER_LISTENING_PORT = 7134;
@@ -47,8 +44,10 @@ public class Peer {
 		
 		//Send 3 main attributes
 		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+		outToServer.writeBytes("Hi! I am up and running: \n");
 		outToServer.writeBytes(hostname+"; ");
-		outToServer.writeBytes(port+"\n");
+		
+		outToServer.writeBytes(port+"\n\n");
 		
 		clientSocket.close();
 	}
@@ -68,7 +67,20 @@ public class Peer {
 		    for (int i = 0; i < listOfFiles.length; i++) {
 		    	if (listOfFiles[i].isFile()) {
 		    		filename = (".\\\\rfcs\\\\" + listOfFiles[i].getName());
-		    		addRfc(filename);
+		    		String packet = buildAddPacket(filename);
+		    		System.out.println(packet);
+		    		
+		    		
+		    		/* Sending the packet to the server.		    		 */
+		    	
+		    		//Open a talking port
+		    		Socket clientSocket = new Socket("127.0.0.1",SERVER_LISTENING_PORT);
+		    		
+		    		//Send the 4 line packet
+		    		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+		    		outToServer.writeBytes(packet);
+		    		
+		    		clientSocket.close();
 		    	} 
 		    }
 		
@@ -82,7 +94,7 @@ public class Peer {
 	 * It called this method once for every RFC it has
 	 * Corresponds to ADD in the specs */
 	 
-	public void addRfc(String filename) throws Exception {
+	public String buildAddPacket(String filename) throws Exception {
 		BufferedReader reader = new BufferedReader(new FileReader(filename));
 		String line = null;
 		String rfcNumber = "";
@@ -91,8 +103,9 @@ public class Peer {
 		
 		//Reading first non-empty line
 		while ((line = reader.readLine()) != null) {			
-			if (line.trim().length() > 0) {
-				rfcNumber = line.trim().substring(line.length()-3);
+			String trimmed_line = line.trim();
+			if (trimmed_line.length() > 0) {
+				rfcNumber = trimmed_line.substring(trimmed_line.length()-3);
 				break;
 			} else {
 				continue;
@@ -109,12 +122,15 @@ public class Peer {
 			}
 		}
 		
+		reader.close();
 		packet = "ADD RFC " + rfcNumber + " " + this.version + "\n"
 					+ "Host: " + this.hostname + "\n"
 					+ "Port: " + this.port  + "\n"
 					+ "Title: " + rfcTitle + "\n";
 
-		System.out.println(packet);
+		//System.out.println(packet);
+		
+		return packet;
 		
 		
 	}
