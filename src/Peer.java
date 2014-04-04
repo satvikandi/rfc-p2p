@@ -27,16 +27,45 @@ public class Peer {
 		//this is nto a prot.Actual empty method
 	}
 	
-	
-	private void lookupRfc(String packet) 
-	{
-		// Step 1 :- buolding the Lookup RFC packet
-		//Step 2 :- Sending the packet across to the Server.
 		
+	
+	private void lookupRfc(String line) throws Exception
+	{
+
+		
+		String rfcNumber = line.substring(0,3);
+		String rfcTitle = line.substring(4);
+		String packet ="";
+		
+		
+		
+		packet = "LOOKUP RFC " + rfcNumber + " " + this.version + "\n"
+					+ "Host: " + this.hostname + "\n"
+					+ "Port: " + this.port  + "\n"
+					+ "Title: " + rfcTitle + "\n";
+		System.out.println(packet);
+		
+		//Step 2 :- Sending the packet across to the Server.
+		Socket clientSocket = new Socket("127.0.0.1",SERVER_LISTENING_PORT);
+		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+		outToServer.writeBytes(packet);
+		clientSocket.close();
 	}
 	
-	public void requestRFC(){
+	public void readRfcReqList() throws Exception
+	{
 		
+		String filename = "rfcs//needed_rfcs.txt";
+		
+		BufferedReader reader = new BufferedReader(new FileReader(filename));
+		String line = null;
+	
+		while((line = reader.readLine())!=null)
+		{
+			lookupRfc(line);
+		}
+		
+		reader.close();
 	}
 	
 	
@@ -142,8 +171,6 @@ public class Peer {
 		//System.out.println(packet);
 		
 		return packet;
-		
-		
 	}
 	
 
@@ -151,8 +178,9 @@ public class Peer {
 		System.out.println("This program represents one of the peers of the system");
 		
 		Peer p1=new Peer();
-		p1.contactServer(); // Tells the server I am alive.
-		p1.addAllRfcs(); //Adds all the RFCS in rfcs folder to the CS's 'index'
+		//p1.contactServer(); // Tells the server I am alive.
+		//p1.addAllRfcs(); //Adds all the RFCS in rfcs folder to the CS's 'index'
+		p1.readRfcReqList();
 	}
 
 }
