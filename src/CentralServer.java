@@ -12,6 +12,11 @@ public class CentralServer {
 			hostName = host;
 			listeningPort = pnum;
 		}
+		
+	    @Override
+	    public String toString() {
+	        return hostName + ": " + listeningPort;
+	    }
 	}
 
 	private class Rfc {
@@ -27,7 +32,7 @@ public class CentralServer {
 		
 	    @Override
 	    public String toString() {
-	        return rfcNum + " - " + title;
+	        return rfcNum + "-" + title + " at " + host;
 	    }
 	}
 
@@ -60,7 +65,7 @@ public class CentralServer {
 					new InputStreamReader(connectionSocket.getInputStream()));
 			
 			
-			// In one session of communication, reads all the available lines. 
+			// In one session of communication, reads all the available lines in one packet. 
 			String clientSentence = null;
 			String packet = "";
 			while((clientSentence = inFromClient.readLine()) != null){
@@ -68,9 +73,13 @@ public class CentralServer {
 			}
 			
 			System.out.println(packet);
+			
+			if (packet.substring(0, 3).equals("Hi!")){
+				addPeer(packet);
+				
+			}
 			if (packet.substring(0, 3).equals("ADD")){
 				addRfc(packet);
-				//addPeer();
 				
 			}
 			
@@ -90,15 +99,16 @@ public class CentralServer {
 	}
 	
 	public void addRfc(String packet) {
+		
+		String packetLines[] = packet.split("\\n");
 
-		String rfcNumString = packet.substring(8, 11);
+		String rfcNumString = packetLines[0].substring(8, 11);
 		int rfcNum = Integer.valueOf(rfcNumString);
 
-		int indexOfTitle = packet.indexOf("Title:");
-		String title = packet.substring(indexOfTitle + 7);
+		String host = packetLines[1].substring(6);
+		String title = packetLines[3].substring(7);
 
-		int indexOfHost = packet.indexOf("Host:");
-		String host = packet.substring(indexOfHost + 6);
+
 	
 		Rfc rfc = new Rfc(rfcNum, title, host);
 		index.add(rfc);
@@ -106,7 +116,11 @@ public class CentralServer {
 		System.out.println(this.index.toString());
 	}
 	
-	private void lookupRfc(String packet) {
+	
+		
+	private void lookupRfc(String packet) 
+	{
+		
 		// TODO Auto-generated method stub
 		
 	}
@@ -119,8 +133,20 @@ public class CentralServer {
 	// Adds the new peer to the ActivePeers list
 	// This method is called when the listening socket receives a new peer
 	// Adds peer to ActivePeers
-	public void addPeer() {
+	public void addPeer(String packet) {
 
+		String packetLines[] = packet.split("\\n");
+		//System.out.println(packetLines[1]);
+		//System.out.println(packetLines[2]);
+		
+		String hostName = packetLines[1];
+		int port = Integer.valueOf(packetLines[2].trim());
+
+		ActivePeer newPeer = new ActivePeer(hostName, port);
+		peerList.add(newPeer);
+		
+		System.out.println("PeerList looks like this now:- \n");
+		System.out.println(this.peerList.toString());
 	}
 
 	// Removes peer from peer list

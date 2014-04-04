@@ -1,5 +1,4 @@
 import java.io.*;
-
 //Saad Smart Ass
 import java.net.Socket;
 import java.util.Date;
@@ -19,7 +18,7 @@ public class Peer {
 	
 		Date date = new Date();
 		port = 1111;
-		hostname = date.toString();
+		hostname = "8.8.8.8";
 		version = "P2P-CI/1.0";
 	}
 
@@ -28,9 +27,18 @@ public class Peer {
 		//this is nto a prot.Actual empty method
 	}
 	
+	
+	private void lookupRfc(String packet) 
+	{
+		// Step 1 :- buolding the Lookup RFC packet
+		//Step 2 :- Sending the packet across to the Server.
+		
+	}
+	
 	public void requestRFC(){
 		
 	}
+	
 	
 	
 	public void startListening(){
@@ -46,10 +54,11 @@ public class Peer {
 		
 		//Send 3 main attributes
 		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-		outToServer.writeBytes("Hi! I am up and running: \n");
-		outToServer.writeBytes(hostname+"; ");
 		
-		outToServer.writeBytes(port+"\n\n");
+		outToServer.writeBytes("Hi! I am up and running: \n");
+		outToServer.writeBytes(hostname+"\n");
+		outToServer.writeBytes(port+"\n");
+		outToServer.writeBytes(version+"\n\n");
 		
 		clientSocket.close();
 	}
@@ -137,6 +146,7 @@ public class Peer {
 		
 	}
 	
+
 	public static void main(String[] args) throws Exception {
 		System.out.println("This program represents one of the peers of the system");
 		
