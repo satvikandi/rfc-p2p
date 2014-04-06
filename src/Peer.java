@@ -13,6 +13,7 @@ public class Peer {
 	int port;
 	
 	static final int SERVER_LISTENING_PORT = 7134;
+	static final String END_OF_PACKET = "END_OF_PACKET\n";
 	
 	public Peer(){
 	
@@ -23,7 +24,6 @@ public class Peer {
 
 	public void publishInfo(int RFCNum)
 	{
-		//this is nto a prot.Actual empty method
 	}
 	
 		
@@ -38,23 +38,30 @@ public class Peer {
 		request = "LOOKUP RFC " + rfcNumber + " " + this.version + "\n"
 					+ "Host: " + this.hostname + "\n"
 					+ "Port: " + this.port  + "\n"
-					+ "Title: " + rfcTitle + "\n";
+					+ "Title: " + rfcTitle + "\n"
+					+ END_OF_PACKET;
 		
 		
 		//Step 2 :- Sending the packet to the Server.
-		
-		System.out.println("TO SERVER:\n");
-		System.out.println(request);
+
 		Socket clientSocket = new Socket("127.0.0.1",SERVER_LISTENING_PORT);
 		
 		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 		BufferedReader inFromServer =  new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		
-		
 		outToServer.writeBytes(request);
-		response = inFromServer.readLine();
+		System.out.println("TO SERVER:");
+		System.out.println(request);
 		
-		System.out.println("FROM SERVER: " + response);
+		String responseLine;
+		
+		responseLine = inFromServer.readLine();
+		response = responseLine;
+		while(!(responseLine = inFromServer.readLine()).equals(END_OF_PACKET.trim())){
+			response += responseLine + "\n";
+		}
+		
+		System.out.println("FROM SERVER:\n" + response+ "\n");
 		
 		clientSocket.close();
 	}
@@ -91,18 +98,8 @@ public class Peer {
 		outToServer.writeBytes("Hi! I am up and running: \n");
 		outToServer.writeBytes(hostname+"\n");
 		outToServer.writeBytes(port+"\n");
-		outToServer.writeBytes(version+"\n\n");
-		
-		
-		
-		
-		//Receiving server response
-		/*BufferedReader inFromServer = 
-		          new BufferedReader(new
-		          InputStreamReader(clientSocket.getInputStream()));
-		String response = inFromServer.readLine(); 
-		
-		System.out.println("FROM SERVER: " + response);*/
+		outToServer.writeBytes(version+"\n");
+		outToServer.writeBytes(END_OF_PACKET);
 		
 		clientSocket.close();
 	}
@@ -149,8 +146,6 @@ public class Peer {
 		    }
 		
 		
-		//String filename = ".\\rfcs\\rfc813.txt";
-		//addRfc(filename);
 	}
 	
 	
@@ -160,7 +155,6 @@ public class Peer {
 	 
 	public String buildAddPacket(String filename) throws Exception {
 		
-		//System.out.println("filename: " + filename);
 		BufferedReader reader = new BufferedReader(new FileReader(filename));
 		String line = null;
 		String rfcNumber = "";
@@ -192,10 +186,9 @@ public class Peer {
 		packet = "ADD RFC " + rfcNumber + " " + this.version + "\n"
 					+ "Host: " + this.hostname + "\n"
 					+ "Port: " + this.port  + "\n"
-					+ "Title: " + rfcTitle + "\n";
+					+ "Title: " + rfcTitle + "\n"
+					+ END_OF_PACKET;
 
-		//System.out.println(packet);
-		
 		return packet;
 	}
 	
@@ -207,25 +200,6 @@ public class Peer {
 		p1.contactServer(); // Tells the server I am alive.
 		p1.addAllRfcs(); //Adds all the RFCS in rfcs folder to the CS's 'index'
 		p1.readRfcReqList();
-		
-		
-		//Random code off I picked off the internet
-		//Looks exactly like our code, but this one works, ours doesn't. 
-		
-/*		String sentence;
-		  String modifiedSentence;
-		  BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
-		  Socket clientSocket = new Socket("localhost", 6789);
-		  DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-		  BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-		  sentence = inFromUser.readLine();
-		  outToServer.writeBytes(sentence + '\n');
-		  modifiedSentence = inFromServer.readLine();
-		  System.out.println("FROM SERVER: " + modifiedSentence);
-		  clientSocket.close();*/
-		
-		
-		
 		
 	}
 
