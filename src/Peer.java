@@ -16,7 +16,6 @@ public class Peer {
 	
 	public Peer(){
 	
-		Date date = new Date();
 		port = 1111;
 		hostname = "8.8.8.8";
 		version = "P2P-CI/1.0";
@@ -31,31 +30,39 @@ public class Peer {
 	
 	private void lookupRfc(String line) throws Exception
 	{
-
-		
 		String rfcNumber = line.substring(0,3);
 		String rfcTitle = line.substring(4);
-		String packet ="";
+		String request ="";
+		String response = "No response from server yet";
 		
-		
-		
-		packet = "LOOKUP RFC " + rfcNumber + " " + this.version + "\n"
+		request = "LOOKUP RFC " + rfcNumber + " " + this.version + "\n"
 					+ "Host: " + this.hostname + "\n"
 					+ "Port: " + this.port  + "\n"
 					+ "Title: " + rfcTitle + "\n";
-		System.out.println(packet);
 		
-		//Step 2 :- Sending the packet across to the Server.
+		
+		//Step 2 :- Sending the packet to the Server.
+		
+		System.out.println("TO SERVER:\n");
+		System.out.println(request);
 		Socket clientSocket = new Socket("127.0.0.1",SERVER_LISTENING_PORT);
+		
 		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-		outToServer.writeBytes(packet);
+		BufferedReader inFromServer =  new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+		
+		
+		outToServer.writeBytes(request);
+		response = inFromServer.readLine();
+		
+		System.out.println("FROM SERVER: " + response);
+		
 		clientSocket.close();
 	}
 	
 	public void readRfcReqList() throws Exception
 	{
 		
-		String filename = "rfcs//needed_rfcs.txt";
+		String filename = "needed_rfcs.txt";
 		
 		BufferedReader reader = new BufferedReader(new FileReader(filename));
 		String line = null;
@@ -70,9 +77,6 @@ public class Peer {
 	
 	
 	
-	public void startListening(){
-		
-	}
 	// Whenever a peer comes alive, it contacts server.
 	// This method only tells the server that the peer is alice. 
 	// That is, this method ONLY opens the connection, mentions it's hostname, and port. 
@@ -88,6 +92,17 @@ public class Peer {
 		outToServer.writeBytes(hostname+"\n");
 		outToServer.writeBytes(port+"\n");
 		outToServer.writeBytes(version+"\n\n");
+		
+		
+		
+		
+		//Receiving server response
+		/*BufferedReader inFromServer = 
+		          new BufferedReader(new
+		          InputStreamReader(clientSocket.getInputStream()));
+		String response = inFromServer.readLine(); 
+		
+		System.out.println("FROM SERVER: " + response);*/
 		
 		clientSocket.close();
 	}
@@ -108,7 +123,7 @@ public class Peer {
 		    	if (listOfFiles[i].isFile()) {
 		    		filename = (".\\\\rfcs\\\\" + listOfFiles[i].getName());
 		    		String packet = buildAddPacket(filename);
-		    		System.out.println(packet);
+		    		//System.out.println(packet);
 		    		
 		    		
 		    		/* Sending the packet to the server.		    		 */
@@ -119,6 +134,15 @@ public class Peer {
 		    		//Send the 4 line packet
 		    		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 		    		outToServer.writeBytes(packet);
+		    		
+		    		
+		    		//Receiving server response
+		    		/*BufferedReader inFromServer = 
+		    		          new BufferedReader(new
+		    		          InputStreamReader(clientSocket.getInputStream()));
+		    		String response = inFromServer.readLine(); 
+		    		
+		    		System.out.println("FROM SERVER: " + response);*/
 		    		
 		    		clientSocket.close();
 		    	} 
@@ -135,6 +159,8 @@ public class Peer {
 	 * Corresponds to ADD in the specs */
 	 
 	public String buildAddPacket(String filename) throws Exception {
+		
+		//System.out.println("filename: " + filename);
 		BufferedReader reader = new BufferedReader(new FileReader(filename));
 		String line = null;
 		String rfcNumber = "";
@@ -175,12 +201,32 @@ public class Peer {
 	
 
 	public static void main(String[] args) throws Exception {
-		System.out.println("This program represents one of the peers of the system");
+		System.out.println("PEER:-");
 		
 		Peer p1=new Peer();
-		//p1.contactServer(); // Tells the server I am alive.
-		//p1.addAllRfcs(); //Adds all the RFCS in rfcs folder to the CS's 'index'
+		p1.contactServer(); // Tells the server I am alive.
+		p1.addAllRfcs(); //Adds all the RFCS in rfcs folder to the CS's 'index'
 		p1.readRfcReqList();
+		
+		
+		//Random code off I picked off the internet
+		//Looks exactly like our code, but this one works, ours doesn't. 
+		
+/*		String sentence;
+		  String modifiedSentence;
+		  BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
+		  Socket clientSocket = new Socket("localhost", 6789);
+		  DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+		  BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+		  sentence = inFromUser.readLine();
+		  outToServer.writeBytes(sentence + '\n');
+		  modifiedSentence = inFromServer.readLine();
+		  System.out.println("FROM SERVER: " + modifiedSentence);
+		  clientSocket.close();*/
+		
+		
+		
+		
 	}
 
 }

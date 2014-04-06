@@ -1,6 +1,10 @@
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.ListIterator;
 import java.net.*;
 import java.io.*;
+
+
 
 public class CentralServer {
 
@@ -15,25 +19,53 @@ public class CentralServer {
 		
 	    @Override
 	    public String toString() {
-	        return hostName + ": " + listeningPort;
+	        return hostName + ": " + listeningPort + '\n';
 	    }
 	}
 
 	private class Rfc {
-		Integer rfcNum;
+		private Integer rfcNum;
 		String title;
-		String host;
+		private String host;
 
 		public Rfc(Integer rfcNum, String title, String host) {
-			this.rfcNum = rfcNum;
+			this.setRfcNum(rfcNum);
 			this.title = title;
-			this.host = host;
+			this.setHost(host);
 		}
 		
 	    @Override
 	    public String toString() {
-	        return rfcNum + "-" + title + " at " + host;
+	        return getRfcNum() + " \"" + title + "\" at " + getHost() + "\n";
 	    }
+
+		/**
+		 * @return the host
+		 */
+		String getHost() {
+			return host;
+		}
+
+		/**
+		 * @param host the host to set
+		 */
+		void setHost(String host) {
+			this.host = host;
+		}
+
+		/**
+		 * @return the rfcNum
+		 */
+		Integer getRfcNum() {
+			return rfcNum;
+		}
+
+		/**
+		 * @param rfcNum the rfcNum to set
+		 */
+		void setRfcNum(Integer rfcNum) {
+			this.rfcNum = rfcNum;
+		}
 	}
 
 
@@ -43,19 +75,22 @@ public class CentralServer {
 	LinkedList<Rfc> index;
 
 	static final int LISTENINGPORT = 7134;
+	String version = "P2P-CI/1.0";
 
 	// Constructor
 	public CentralServer() {
 		peerList = new LinkedList<ActivePeer>();
 		index = new LinkedList<Rfc>();
+		version = "P2P-CI/1.0";
 
 		System.out
-				.println("This is the java class that represents the central server \n \n");
+				.println("SERVER:- \n \n");
 	}
 
 	public void startListening() throws Exception {
 		@SuppressWarnings("resource")
 		ServerSocket welcomeSocket = new ServerSocket(LISTENINGPORT);
+		String request, response;
 
 		// Communicates to one socket in one iteration.
 		// Seems to be atomic for that session of communication. 
@@ -65,33 +100,54 @@ public class CentralServer {
 					new InputStreamReader(connectionSocket.getInputStream()));
 			
 			
+			DataOutputStream  outToClient = 
+		             new DataOutputStream(connectionSocket.getOutputStream()); 
+			
+			
 			// In one session of communication, reads all the available lines in one packet. 
 			String clientSentence = null;
-			String packet = "";
+			//String request = "";
+			//String response = "";
+			request = "";
+			response = "";
 			while((clientSentence = inFromClient.readLine()) != null){
-				packet += clientSentence + "\n";
+				request += clientSentence + "\n";
 			}
 			
-			System.out.println(packet);
+			System.out.println(request);
 			
-			if (packet.substring(0, 3).equals("Hi!")){
-				addPeer(packet);
-				
+			if (request.substring(0, 3).equals("Hi!")){
+				response = "This is default 'HI' response";
+				addPeer(request);
+				//outToClient.writeBytes(response);
 			}
-			if (packet.substring(0, 3).equals("ADD")){
-				addRfc(packet);
-				
-			}
-			
-			if (packet.substring(0, 6).equals("LOOKUP")){
-				lookupRfc(packet);
-				
+			if (request.substring(0, 3).equals("ADD")){
+				response = "This is default ADD response.";
+				addRfc(request);
+				//outToClient.writeBytes(response);
 			}
 			
-			if (packet.substring(0, 4).equals("LIST")){
-				getIndex(packet);
+			if (request.substring(0, 6).equals("LOOKUP")){
+				response = "This is default LOOKUP response.\n";
+				System.out.print("Entered Lookup on server\n");
+				
+				//SATVIK: Following line of code calculates the correct response. 
+				// For now, just send the dummy response, and print it on client console. 
+				//response = lookupRfc(request);
+				System.out.print("Here's the response to lookup:\n");				
+				System.out.print(response);
+				outToClient.writeBytes(response+'\n');
+				outToClient.flush();
 				
 			}
+			
+			if (request.substring(0, 4).equals("LIST")){
+				getIndex(request);
+				outToClient.writeBytes(response + '\n');
+				
+			}
+			
+			
 	
 
 		}
@@ -112,15 +168,42 @@ public class CentralServer {
 	
 		Rfc rfc = new Rfc(rfcNum, title, host);
 		index.add(rfc);
-		System.out.println("Index looks like this now:- \n");
-		System.out.println(this.index.toString());
+		//System.out.println("Index looks like this now:- \n");
+		//System.out.println(this.index.toString());
 	}
 	
 	
 		
-	private void lookupRfc(String packet) 
+	private String lookupRfc(String packet) 
 	{
-		// TODO Auto-generated method stub	
+		System.out.println(packet);
+		String packetLines[] = packet.split("\\n");
+		String rfcNumString = packetLines[0].split(" ")[2];
+		int rfcNum = Integer.valueOf(rfcNumString);
+		
+		String response = version + " 200 OK\n\n";
+		
+		ListIterator indexIterator = index.listIterator();
+
+		while(indexIterator.hasNext()){
+			Rfc currentRfc = (Rfc) indexIterator.next(); 
+			if (currentRfc.getRfcNum() == rfcNum){
+				//If rfc is present in index, get its host's listening port
+				ListIterator peerListIterator = peerList.listIterator();
+				while(peerListIterator.hasNext()){
+					ActivePeer currentPeer = (ActivePeer) peerListIterator.next(); 
+					if (currentPeer.hostName.equals(currentRfc.host)){
+						response += "RFC " + currentRfc.rfcNum + " " + currentRfc.title + " " + currentRfc.host + " " + currentPeer.listeningPort;
+						break;
+					}
+				}
+			}
+		}
+		
+		
+
+		//System.out.println(response);
+		return response;
 	}
 
 	private void getIndex(String packet) {
@@ -157,6 +240,25 @@ public class CentralServer {
 	public static void main(String args[]) throws Exception {
 		CentralServer CS = new CentralServer();
 		CS.startListening();
+		
+		
+		//Random code off I picked off the internet
+		//Looks exactly like our code, but this one works, ours doesn't. 
+	/*	String clientSentence;
+        String capitalizedSentence;
+        ServerSocket welcomeSocket = new ServerSocket(6789);
 
+        while(true)
+        {
+           Socket connectionSocket = welcomeSocket.accept();
+           BufferedReader inFromClient =
+              new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+           DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
+           clientSentence = inFromClient.readLine();
+           System.out.println("Received: " + clientSentence);
+           capitalizedSentence = clientSentence.toUpperCase() + '\n';
+           outToClient.writeBytes(capitalizedSentence);
+        }*/
+		
 	}
 }
