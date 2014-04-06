@@ -84,8 +84,7 @@ public class CentralServer {
 		index = new LinkedList<Rfc>();
 		version = "P2P-CI/1.0";
 
-		System.out
-				.println("SERVER:- \n \n");
+		System.out.println("SERVER:- \n \n");
 	}
 
 	public void startListening() throws Exception {
@@ -200,9 +199,34 @@ public class CentralServer {
 	}
 
 	private void getIndex(String packet) {
-		// TODO Auto-generated method stub
+		System.out.println("This List method is being called");		
+		String response = "";
+		String response_line_1 = "";
 		
-	}
+		ListIterator indexIterator = index.listIterator();
+		//if_server_is_active 
+		//{
+		response_line_1 += version + " 200 OK \n";
+	    //}
+		while(indexIterator.hasNext()){
+			Rfc currentRfc = (Rfc) indexIterator.next(); 
+			// Get host and listening port of the Rfc number present in the peer list
+				ListIterator peerListIterator = peerList.listIterator();
+				while(peerListIterator.hasNext()){
+					ActivePeer currentPeer = (ActivePeer) peerListIterator.next(); 
+					
+					
+						response += "RFC " + currentRfc.rfcNum + " " + currentRfc.title + " " + currentRfc.host + " " + currentPeer.listeningPort + '\n';
+						break;
+				}
+			}
+		System.out.println(response_line_1 + response);
+		}
+		
+		
+		
+		
+
 
 	// Adds the new peer to the ActivePeers list
 	// This method is called when the listening socket receives a new peer

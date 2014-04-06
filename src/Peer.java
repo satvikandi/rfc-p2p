@@ -26,10 +26,30 @@ public class Peer {
 	{
 	}
 	
+	private void listRfc() throws Exception
+	{
+		String request = "LIST ALL P2P-CI/1.0 \n" 
+				+ "Host: " + this.hostname + "\n"
+				+ "Port: " + this.port  + "\n"
+				+ END_OF_PACKET;
+		
+		Socket clientSocket = new Socket("127.0.0.1",SERVER_LISTENING_PORT);
+		
+		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+		//BufferedReader inFromServer =  new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+		
+		outToServer.writeBytes(request);
+		System.out.println("TO SERVER:");
+		System.out.println(request);
+		
+		clientSocket.close();
+	}
 		
 	
 	private void lookupRfc(String line) throws Exception
 	{
+		// Step 1 :- assembling the lookup packet from various data elements.
+		
 		String rfcNumber = line.substring(0,3);
 		String rfcTitle = line.substring(4);
 		String request ="";
@@ -199,7 +219,8 @@ public class Peer {
 		Peer p1=new Peer();
 		p1.contactServer(); // Tells the server I am alive.
 		p1.addAllRfcs(); //Adds all the RFCS in rfcs folder to the CS's 'index'
-		p1.readRfcReqList();
+		p1.readRfcReqList(); // Reads what all Rfcs have to be requested
+		p1.listRfc();   // Sends a list request to the server
 		
 	}
 
