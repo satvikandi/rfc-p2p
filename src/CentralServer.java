@@ -191,6 +191,11 @@ public class CentralServer {
 			}
 		}
 		
+		if(response.split("\n").length==1)
+		{
+			response = version + " 404 Not Found\n";
+		}
+		
 		response += END_OF_PACKET;
 
 		//System.out.println(response);
