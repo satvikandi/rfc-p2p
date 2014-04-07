@@ -1,10 +1,8 @@
-import java.util.Iterator;
+
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.net.*;
 import java.io.*;
-
-
 
 public class CentralServer {
 
@@ -134,8 +132,11 @@ public class CentralServer {
 			}
 			
 			if (request.substring(0, 4).equals("LIST")){
-				getIndex(request);
+				response = getIndex(request);
+				//System.out.println("This is the calling method");
+				System.out.println(response);
 				outToClient.writeBytes(response + '\n');
+				outToClient.flush();
 				
 			}
 			
@@ -156,8 +157,6 @@ public class CentralServer {
 		String host = packetLines[1].substring(6);
 		String title = packetLines[3].substring(7);
 
-
-	
 		Rfc rfc = new Rfc(rfcNum, title, host);
 		index.add(rfc);
 		//System.out.println("Index looks like this now:- \n");
@@ -175,13 +174,13 @@ public class CentralServer {
 		
 		String response = version + " 200 OK\n";
 		
-		ListIterator indexIterator = index.listIterator();
+		ListIterator<Rfc> indexIterator = index.listIterator();
 
 		while(indexIterator.hasNext()){
 			Rfc currentRfc = (Rfc) indexIterator.next(); 
 			if (currentRfc.getRfcNum() == rfcNum){
 				//If rfc is present in index, get its host's listening port
-				ListIterator peerListIterator = peerList.listIterator();
+				ListIterator<ActivePeer> peerListIterator = peerList.listIterator();
 				while(peerListIterator.hasNext()){
 					ActivePeer currentPeer = (ActivePeer) peerListIterator.next(); 
 					if (currentPeer.hostName.equals(currentRfc.host)){
@@ -198,12 +197,12 @@ public class CentralServer {
 		return response;
 	}
 
-	private void getIndex(String packet) {
+	private String getIndex(String packet) {
 		System.out.println("This List method is being called");		
 		String response = "";
 		String response_line_1 = "";
 		
-		ListIterator indexIterator = index.listIterator();
+		ListIterator<Rfc> indexIterator = index.listIterator();
 		//if_server_is_active 
 		//{
 		response_line_1 += version + " 200 OK \n";
@@ -211,7 +210,7 @@ public class CentralServer {
 		while(indexIterator.hasNext()){
 			Rfc currentRfc = (Rfc) indexIterator.next(); 
 			// Get host and listening port of the Rfc number present in the peer list
-				ListIterator peerListIterator = peerList.listIterator();
+				ListIterator<ActivePeer> peerListIterator = peerList.listIterator();
 				while(peerListIterator.hasNext()){
 					ActivePeer currentPeer = (ActivePeer) peerListIterator.next(); 
 					
@@ -220,7 +219,7 @@ public class CentralServer {
 						break;
 				}
 			}
-		System.out.println(response_line_1 + response);
+		return (response_line_1 +"\n" + response + END_OF_PACKET);
 		}
 		
 		
