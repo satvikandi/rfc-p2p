@@ -1,4 +1,5 @@
 import java.io.*;
+import java.net.ServerSocket;
 //Saad Smart Ass
 import java.net.Socket;
 
@@ -8,7 +9,7 @@ public class Peer {
 	String hostname;
 	String version;
 	int port;
-	
+		
 	static final int SERVER_LISTENING_PORT = 7134;
 	static final String END_OF_PACKET = "END_OF_PACKET\n";
 	
@@ -17,10 +18,47 @@ public class Peer {
 		port = 1111;
 		hostname = "8.8.8.8";
 		version = "P2P-CI/1.0";
+		try{
+			this.startListening();
+		} catch (Exception  e) {
+			
+		}
+		
 	}
 
 	public void publishInfo(int RFCNum)
 	{
+	}
+	
+	private void startListening() throws Exception 
+	{
+		@SuppressWarnings("resource")
+		ServerSocket welcomeSocket = new ServerSocket(this.port);
+
+		// Communicates to one socket in one iteration.
+		// Seems to be atomic for that session of communication. 
+		while (true) 
+		{
+			Socket connectionSocket = welcomeSocket.accept();
+			BufferedReader inFromClient = new BufferedReader(
+					new InputStreamReader(connectionSocket.getInputStream()));
+			
+			
+			DataOutputStream  outToClient = 
+		             new DataOutputStream(connectionSocket.getOutputStream()); 
+			
+			
+			// In one session of communication, reads all the available lines in one packet. 
+			String clientSentence = null;
+			String request = "";
+			String response = "";
+			while (!((clientSentence = inFromClient.readLine().trim()).equals(END_OF_PACKET.trim()))){
+				request += clientSentence + "\n";
+			}
+			
+			System.out.println(request);
+			
+		}
 	}
 	
 	private void requestRfcList() throws Exception
