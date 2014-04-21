@@ -18,11 +18,11 @@ public class Peer {
 		port = 1111;
 		hostname = "8.8.8.8";
 		version = "P2P-CI/1.0";
-		try{
+	/*	try{
 			this.startListening();
 		} catch (Exception  e) {
 			
-		}
+		} */
 		
 	}
 
@@ -30,7 +30,7 @@ public class Peer {
 	{
 	}
 	
-	private void startListening() throws Exception 
+	/*private void startListening() throws Exception 
 	{
 		@SuppressWarnings("resource")
 		ServerSocket welcomeSocket = new ServerSocket(this.port);
@@ -88,7 +88,7 @@ public class Peer {
 		System.out.println("FROM SERVER:\n" + response+ "\n");
 		
 		clientSocket.close();
-	}
+	} */
 		
 	
 	private void lookupRfc(String line) throws Exception
@@ -258,11 +258,14 @@ public class Peer {
 		System.out.println("PEER:-");
 		
 		Peer p1=new Peer();
+		System.out.println("Menu \n 1. Contact the server by opening a socket. \n 2. Inform the server about all the stored RFCs \n 3. Request rfcs from server \n 4. Download RFCs from the server \n 5. Close connection to the server. \n ");
+	
 		p1.contactServer(); // Tells the server I am alive.
 		p1.addAllRfcs(); //Adds all the RFCS in rfcs folder to the CS's 'index'
 		p1.readRfcReqList(); // Reads what all Rfcs have to be requested
 		p1.requestRfcList();   // Sends a list request to the server
 		
+	
 	}
 
 }
