@@ -259,10 +259,13 @@ public class Peer {
 		clientSocket.close();
 	}
 	
+	@SuppressWarnings("finally")
 	public static void main(String[] args) throws Exception {
 		System.out.println("PEER:-");
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		Peer p1=new Peer();
+		try
+		{
 		clientSocket = new Socket("127.0.0.1",SERVER_LISTENING_PORT);
 		
 		do
@@ -302,6 +305,16 @@ public class Peer {
 			break;
 		}
 		}while(true);
+		
+		} catch (Exception e)
+		{
+			//e.printStackTrace();
+			System.out.println("Server has not yet started running ... Start server and then run the peer \n");
+		} finally
+		{
+			return;
+		}
+	
 	}
 
 }
