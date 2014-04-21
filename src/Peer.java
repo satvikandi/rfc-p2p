@@ -1,7 +1,7 @@
 import java.io.*;
 import java.net.ServerSocket;
-//Saad Smart Ass
 import java.net.Socket;
+import java.util.Scanner;
 
 
 public class Peer {
@@ -9,10 +9,11 @@ public class Peer {
 	String hostname;
 	String version;
 	int port;
-		
+	
+	
 	static final int SERVER_LISTENING_PORT = 7134;
 	static final String END_OF_PACKET = "END_OF_PACKET\n";
-	
+	public static Socket clientSocket;
 	public Peer(){
 	
 		port = 1111;
@@ -63,7 +64,7 @@ public class Peer {
 				+ "Port: " + this.port  + "\n"
 				+ END_OF_PACKET;
 		
-		Socket clientSocket = new Socket("127.0.0.1",SERVER_LISTENING_PORT);
+		//clientSocket = new Socket("127.0.0.1",SERVER_LISTENING_PORT);
 		
 		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 		BufferedReader inFromServer =  new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -82,7 +83,7 @@ public class Peer {
 		
 		System.out.println("FROM SERVER:\n" + response+ "\n");
 		
-		clientSocket.close();
+		//clientSocket.close();
 	}
 		
 	
@@ -104,7 +105,7 @@ public class Peer {
 		
 		//Step 2 :- Sending the packet to the Server.
 
-		Socket clientSocket = new Socket("127.0.0.1",SERVER_LISTENING_PORT);
+		//clientSocket = new Socket("127.0.0.1",SERVER_LISTENING_PORT);
 		
 		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 		BufferedReader inFromServer =  new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -123,7 +124,7 @@ public class Peer {
 		
 		System.out.println("FROM SERVER:\n" + response+ "\n");
 		
-		clientSocket.close();
+		//clientSocket.close();
 	}
 	
 	public void readRfcReqList() throws Exception
@@ -150,7 +151,7 @@ public class Peer {
 	
 	public void contactServer() throws Exception{
 		//Open a talking port
-		Socket clientSocket = new Socket("127.0.0.1",SERVER_LISTENING_PORT);
+		clientSocket = new Socket("127.0.0.1",SERVER_LISTENING_PORT);
 		
 		//Send 3 main attributes
 		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
@@ -161,7 +162,7 @@ public class Peer {
 		outToServer.writeBytes(version+"\n");
 		outToServer.writeBytes(END_OF_PACKET);
 		
-		clientSocket.close();
+		//clientSocket.close();
 	}
 	
 	/* This method looks for an 'rfcs' directory,
@@ -184,7 +185,7 @@ public class Peer {
 		    		//System.out.println(packet);
 		    		// Sending the packet to the server.		    		 
 		    		//Open a talking port
-		    		Socket clientSocket = new Socket("127.0.0.1",SERVER_LISTENING_PORT);
+		    		//Socket clientSocket = new Socket("127.0.0.1",SERVER_LISTENING_PORT);
 		    		
 		    		//Send the 4 line packet
 		    		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
@@ -199,7 +200,7 @@ public class Peer {
 		    		
 		    		System.out.println("FROM SERVER: " + response);*/
 		    		
-		    		clientSocket.close();
+		    		//clientSocket.close();
 		    	} 
 		    }
 	}
@@ -249,18 +250,52 @@ public class Peer {
 	}
 	
 
+	public void closeConnectionToServer() throws Exception
+	{
+		clientSocket.close();
+	}
+	
 	public static void main(String[] args) throws Exception {
 		System.out.println("PEER:-");
-		
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		Peer p1=new Peer();
-		System.out.println("Menu \n 1. Contact the server by opening a socket. \n 2. Inform the server about all the stored RFCs \n 3. Request rfcs from server \n 4. Download RFCs from the server \n 5. Close connection to the server. \n ");
-	
-		p1.contactServer(); // Tells the server I am alive.
-		p1.addAllRfcs(); //Adds all the RFCS in rfcs folder to the CS's 'index'
-		p1.readRfcReqList(); // Reads what all Rfcs have to be requested
-		p1.requestRfcList();   // Sends a list request to the server
 		
-	
+		do
+		{
+		System.out.println("Menu \n 1. Contact the server by opening a socket. \n 2. Inform the server about all the stored RFCs(ADD) \n 3. Request rfcs from server \n 4. Download RFCs from the server(LOOKUP) \n 5. Close connection to the server. \n ");
+			
+		String s = br.readLine();
+		
+		int option = Integer.parseInt(s);
+		
+		switch(option)
+		{
+		case 1:
+			p1.contactServer(); // Tells the server I am alive.
+			break;
+			
+		case 2:
+			p1.addAllRfcs(); //Adds all the RFCS in rfcs folder to the CS's 'index'
+			break;
+			
+		case 3:	
+			p1.readRfcReqList(); // Reads what all Rfcs have to be requested
+			p1.requestRfcList();   // Sends a list request to the server
+			break;
+			
+		case 4:
+			// Method to download RFCs
+			
+		case 5:
+			System.out.println("Connection closed");
+			p1.closeConnectionToServer();
+			break;
+			
+		default:
+			System.out.println("Please enter a valid option: \n");
+			break;
+		}
+		}while(true);
 	}
 
 }
