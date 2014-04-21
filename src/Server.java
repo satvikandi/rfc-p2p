@@ -3,10 +3,35 @@ import java.util.LinkedList;
 import java.util.ListIterator;
 import java.net.*;
 import java.io.*;
+import java.util.*;
+//import Server.RFCServer;
 
-public class CentralServer {
 
-	private class ActivePeer {
+
+public class Server {
+
+	//static final int LISTENINGPORT = 7134;
+	static final String END_OF_PACKET = "END_OF_PACKET\n";
+	static final String version = "P2P-CI/1.0";
+
+		static List<ActivePeer> peerList = new LinkedList<ActivePeer>();
+	static List<Rfc>index = new LinkedList<Rfc>();
+	
+	
+	public static void main(String args[]) throws Exception {
+		
+			System.out.println("Server");
+	       /* if(args.length != 1) {
+	            System.out.println("Server usage: Server #port");
+	            System.exit(-1);
+	        } */
+
+	        ServerSocket listener = new ServerSocket(Integer.parseInt(args[0]));
+	        while(true) {
+	            new CentralServer(listener.accept()).start();
+	        }
+	}
+	private static class ActivePeer {
 		String hostName;
 		Integer listeningPort;
 
@@ -21,7 +46,7 @@ public class CentralServer {
 	    }
 	}
 
-	private class Rfc {
+	private static class Rfc {
 		private Integer rfcNum;
 		String title;
 		private String host;
@@ -65,40 +90,61 @@ public class CentralServer {
 			this.rfcNum = rfcNum;
 		}
 	}
-
-
-
-	LinkedList<ActivePeer> peerList;
-
-	LinkedList<Rfc> index;
-
-	static final int LISTENINGPORT = 7134;
-	static final String END_OF_PACKET = "END_OF_PACKET\n";
-	String version = "P2P-CI/1.0";
-
+	private static class CentralServer extends Thread
+	{
+		
+	//	LinkedList<ActivePeer> peerList;
+	//	LinkedList<Rfc> index;
+	
+	private Socket socket;
+    BufferedReader in;
+    DataOutputStream out;
 	// Constructor
-	public CentralServer() {
-		peerList = new LinkedList<ActivePeer>();
-		index = new LinkedList<Rfc>();
-		version = "P2P-CI/1.0";
-
-		System.out.println("SERVER:- \n \n");
+	public CentralServer(Socket sock) {
+		
+		System.out.println("A new Thread \n \n");
+		 this.socket = sock;
+         try {
+             this.in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+             this.out = new DataOutputStream(this.socket.getOutputStream()); 
+         } catch (IOException e) {
+             e.printStackTrace();
+         }
 	}
+		//version = "P2P-CI/1.0"
+         
+         @Override
+         public void run() {
+             System.out.println("Hi.. This is a new connection for a peer");
+
+             try {
+                 startListening();
+             } catch (Exception e) {
+                 e.printStackTrace();
+             } finally {
+                 try {
+                     socket.close();
+                 } catch (IOException e) {
+                     e.printStackTrace();
+                 }
+             }
+         }
+	
 
 	public void startListening() throws Exception {
-		@SuppressWarnings("resource")
-		ServerSocket welcomeSocket = new ServerSocket(LISTENINGPORT);
+		//@SuppressWarnings("resource")
+		// ServerSocket welcomeSocket = new ServerSocket(LISTENINGPORT);
 
 		// Communicates to one socket in one iteration.
 		// Seems to be atomic for that session of communication. 
 		//while (true) {
-			Socket connectionSocket = welcomeSocket.accept();
-			BufferedReader inFromClient = new BufferedReader(
-					new InputStreamReader(connectionSocket.getInputStream()));
+		//	Socket connectionSocket = welcomeSocket.accept();
+		//	BufferedReader inFromClient = new BufferedReader(
+		//			new InputStreamReader(connectionSocket.getInputStream()));
 			
 			
-			DataOutputStream  outToClient = 
-		             new DataOutputStream(connectionSocket.getOutputStream()); 
+		//	DataOutputStream  outToClient = 
+		//             new DataOutputStream(connectionSocket.getOutputStream()); 
 			
 			
 			// In one session of communication, reads all the available lines in one packet. 
@@ -109,7 +155,7 @@ public class CentralServer {
 			String request = "";
 			String response = "";
 			
-			while (!((clientSentence = inFromClient.readLine().trim()).equals(END_OF_PACKET.trim())))
+			while (!((clientSentence = this.in.readLine().trim()).equals(END_OF_PACKET.trim())))
 			{
 				request += clientSentence + "\n";
 			}
@@ -126,7 +172,7 @@ public class CentralServer {
 			}
 			else if (request.substring(0, 3).equals("ADD")){
 				//response = "This is default ADD response.";
-				System.out.println("The peer is adding all it's RFCs to the RFC List in the server one by one \n");
+				//System.out.println("The peer is adding all it's RFCs to the RFC List in the server one by one \n");
 				addRfc(request);
 				continue;
 				//outToClient.writeBytes(response);
@@ -137,8 +183,8 @@ public class CentralServer {
 				response = "This is default LOOKUP response.\n";
 				response = lookupRfc(request);
 				//System.out.print(response);
-				outToClient.writeBytes(response);
-				outToClient.flush();
+				this.out.writeBytes(response);
+				this.out.flush();
 				continue;
 			}
 			
@@ -146,8 +192,8 @@ public class CentralServer {
 				response = getIndex(request);
 				//System.out.println("This is the calling method");
 				System.out.println(response);
-				outToClient.writeBytes(response + '\n');
-				outToClient.flush();
+				this.out.writeBytes(response + '\n');
+				this.out.flush();
 				
 			}
 			
@@ -174,7 +220,7 @@ public class CentralServer {
 		Rfc rfc = new Rfc(rfcNum, title, host);
 		index.add(rfc);
 		System.out.println("Index looks like this now:- \n");
-		System.out.println(this.index.toString());
+		System.out.println(index.toString());
 	}
 	
 	
@@ -265,19 +311,32 @@ public class CentralServer {
 		peerList.add(newPeer);
 		
 		System.out.println("PeerList looks like this now:- \n");
-		System.out.println(this.peerList.toString());
+		System.out.println(peerList.toString());
 	}
 
 	// Removes peer from peer list
 	// emoves all his RFCs from the index
-	public void removePeer() {
-
-	}
-
-	
-	public static void main(String args[]) throws Exception {
-		CentralServer CS = new CentralServer();
-		CS.startListening();
+	public void RemovePeer()
+	{
 		
 	}
+	
+	/*private class Listening implements Runnable
+	{
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			
+			
+		}
+		
+	} */
+	}
+	
+	
+    
+		
 }
+
+
