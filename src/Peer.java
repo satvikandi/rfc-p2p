@@ -17,13 +17,7 @@ public class Peer {
 	
 		port = 1111;
 		hostname = "8.8.8.8";
-		version = "P2P-CI/1.0";
-	/*	try{
-			this.startListening();
-		} catch (Exception  e) {
-			
-		} */
-		
+		version = "P2P-CI/1.0";		
 	}
 
 	public void publishInfo(int RFCNum)
@@ -60,6 +54,7 @@ public class Peer {
 			
 		}
 	}
+	*/
 	
 	private void requestRfcList() throws Exception
 	{
@@ -88,7 +83,7 @@ public class Peer {
 		System.out.println("FROM SERVER:\n" + response+ "\n");
 		
 		clientSocket.close();
-	} */
+	}
 		
 	
 	private void lookupRfc(String line) throws Exception
