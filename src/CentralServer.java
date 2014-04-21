@@ -91,7 +91,7 @@ public class CentralServer {
 
 		// Communicates to one socket in one iteration.
 		// Seems to be atomic for that session of communication. 
-		while (true) {
+		//while (true) {
 			Socket connectionSocket = welcomeSocket.accept();
 			BufferedReader inFromClient = new BufferedReader(
 					new InputStreamReader(connectionSocket.getInputStream()));
@@ -102,36 +102,47 @@ public class CentralServer {
 			
 			
 			// In one session of communication, reads all the available lines in one packet. 
+			
+			while(true)
+			{
 			String clientSentence = null;
 			String request = "";
 			String response = "";
-			while (!((clientSentence = inFromClient.readLine().trim()).equals(END_OF_PACKET.trim()))){
+			
+			while (!((clientSentence = inFromClient.readLine().trim()).equals(END_OF_PACKET.trim())))
+			{
 				request += clientSentence + "\n";
 			}
 			
-			System.out.println(request);
+			
 			
 			if (request.substring(0, 3).equals("Hi!")){
+				System.out.println("");
+				System.out.println(request);  // Prints Hi I'm .....
 				response = "This is default 'HI' response";
 				addPeer(request);
+				continue;
 				//outToClient.writeBytes(response);
 			}
-			if (request.substring(0, 3).equals("ADD")){
-				response = "This is default ADD response.";
+			else if (request.substring(0, 3).equals("ADD")){
+				//response = "This is default ADD response.";
+				System.out.println("The peer is adding all it's RFCs to the RFC List in the server one by one \n");
 				addRfc(request);
+				continue;
 				//outToClient.writeBytes(response);
 			}
 			
-			if (request.substring(0, 6).equals("LOOKUP")){
+			else if (request.substring(0, 6).equals("LOOKUP")){
+			
 				response = "This is default LOOKUP response.\n";
 				response = lookupRfc(request);
-				System.out.print(response);
+				//System.out.print(response);
 				outToClient.writeBytes(response);
 				outToClient.flush();
-				
+				continue;
 			}
 			
-			if (request.substring(0, 4).equals("LIST")){
+			else if (request.substring(0, 4).equals("LIST")){
 				response = getIndex(request);
 				//System.out.println("This is the calling method");
 				System.out.println(response);
@@ -140,10 +151,13 @@ public class CentralServer {
 				
 			}
 			
-			
+			else
+			{
+				System.out.println("Server cannot recognize such a message \n");
+			}
 	
-
-		}
+			}
+		
 
 	}
 	
@@ -153,21 +167,21 @@ public class CentralServer {
 
 		String rfcNumString = packetLines[0].substring(8, 11);
 		int rfcNum = Integer.valueOf(rfcNumString);
-
+		
 		String host = packetLines[1].substring(6);
 		String title = packetLines[3].substring(7);
 
 		Rfc rfc = new Rfc(rfcNum, title, host);
 		index.add(rfc);
-		//System.out.println("Index looks like this now:- \n");
-		//System.out.println(this.index.toString());
+		System.out.println("Index looks like this now:- \n");
+		System.out.println(this.index.toString());
 	}
 	
 	
 		
 	private String lookupRfc(String packet) 
 	{
-		System.out.println(packet);
+		//System.out.println(packet);
 		String packetLines[] = packet.split("\\n");
 		String rfcNumString = packetLines[0].split(" ")[2];
 		int rfcNum = Integer.valueOf(rfcNumString);
@@ -183,11 +197,14 @@ public class CentralServer {
 				ListIterator<ActivePeer> peerListIterator = peerList.listIterator();
 				while(peerListIterator.hasNext()){
 					ActivePeer currentPeer = (ActivePeer) peerListIterator.next(); 
-					if (currentPeer.hostName.equals(currentRfc.host)){
+					if (currentPeer.hostName.equals(currentRfc.host))
+					{
 						response += "RFC " + currentRfc.rfcNum + " " + currentRfc.title + " " + currentRfc.host + " " + currentPeer.listeningPort + '\n';
-						break;
+						//break;
 					}
+				
 				}
+				
 			}
 		}
 		

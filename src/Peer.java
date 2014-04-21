@@ -99,6 +99,7 @@ public class Peer {
 		request = "LOOKUP RFC " + rfcNumber + " " + this.version + "\n"
 					+ "Host: " + this.hostname + "\n"
 					+ "Port: " + this.port  + "\n"
+				
 					+ "Title: " + rfcTitle + "\n"
 					+ END_OF_PACKET;
 		
@@ -111,6 +112,7 @@ public class Peer {
 		BufferedReader inFromServer =  new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		
 		outToServer.writeBytes(request);
+		outToServer.flush();
 		System.out.println("TO SERVER:");
 		System.out.println(request);
 		
@@ -151,7 +153,7 @@ public class Peer {
 	
 	public void contactServer() throws Exception{
 		//Open a talking port
-		clientSocket = new Socket("127.0.0.1",SERVER_LISTENING_PORT);
+		
 		
 		//Send 3 main attributes
 		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
@@ -189,7 +191,9 @@ public class Peer {
 		    		
 		    		//Send the 4 line packet
 		    		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+		    		//System.out.println(packet);
 		    		outToServer.writeBytes(packet);
+		    		//outToServer.writeBytes(END_OF_PACKET);
 		    		
 		    		
 		    		//Receiving server response
@@ -259,38 +263,40 @@ public class Peer {
 		System.out.println("PEER:-");
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		Peer p1=new Peer();
+		clientSocket = new Socket("127.0.0.1",SERVER_LISTENING_PORT);
 		
 		do
 		{
-		System.out.println("Menu \n 1. Contact the server by opening a socket. \n 2. Inform the server about all the stored RFCs(ADD) \n 3. Request rfcs from server \n 4. Download RFCs from the server(LOOKUP) \n 5. Close connection to the server. \n ");
+		System.out.println("Select an option between 1 and 5 for the below actions \n 1. Inform server of active status \n 2. Inform the server about all the stored RFCs(ADD) \n 3. Request peers having particular RFC (LOOKUP) \n 4. List the whole index of RFCs from the server (LIST) \n 5. Close connection to the server. \n ");
 			
-		String s = br.readLine();
+		//String s = br.readLine();
 		
-		int option = Integer.parseInt(s);
+		int option = Integer.parseInt(br.readLine());
 		
 		switch(option)
 		{
 		case 1:
 			p1.contactServer(); // Tells the server I am alive.
+			System.out.println("Server has been notified ... Active Peer's List has been updated \n");
 			break;
 			
 		case 2:
 			p1.addAllRfcs(); //Adds all the RFCS in rfcs folder to the CS's 'index'
+			System.out.println("RFCs present with this peer have been added to server RFC list \n");
 			break;
 			
 		case 3:	
 			p1.readRfcReqList(); // Reads what all Rfcs have to be requested
-			p1.requestRfcList();   // Sends a list request to the server
 			break;
 			
 		case 4:
-			// Method to download RFCs
-			
+			p1.requestRfcList();   // Sends a list request to the server
+			break;
 		case 5:
 			System.out.println("Connection closed");
 			p1.closeConnectionToServer();
-			break;
-			
+			//System.exit();
+			return;
 		default:
 			System.out.println("Please enter a valid option: \n");
 			break;
