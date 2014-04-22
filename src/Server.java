@@ -160,8 +160,6 @@ public class Server {
 				request += clientSentence + "\n";
 			}
 			
-			
-			
 			if (request.substring(0, 3).equals("Hi!")){
 				System.out.println("");
 				System.out.println(request);  // Prints Hi I'm .....
@@ -170,6 +168,7 @@ public class Server {
 				continue;
 				//outToClient.writeBytes(response);
 			}
+			
 			else if (request.substring(0, 3).equals("ADD")){
 				//response = "This is default ADD response.";
 				//System.out.println("The peer is adding all it's RFCs to the RFC List in the server one by one \n");
@@ -195,6 +194,15 @@ public class Server {
 				this.out.writeBytes(response + '\n');
 				this.out.flush();
 				
+			}
+			
+			else if(request.substring(0,5).equals("CLOSE"))
+			{
+				System.out.println("The connection has been closed \n");
+				String packet = "";
+	
+				deletePeer(request);
+				//socket.close();
 			}
 			
 			else
@@ -248,7 +256,7 @@ public class Server {
 						response += "RFC " + currentRfc.rfcNum + " " + currentRfc.title + " " + currentRfc.host + " " + currentPeer.listeningPort + '\n';
 						//break;
 					}
-				
+				System.out.println(response);
 				}
 				
 			}
@@ -281,26 +289,19 @@ public class Server {
 				ListIterator<ActivePeer> peerListIterator = peerList.listIterator();
 				while(peerListIterator.hasNext()){
 					ActivePeer currentPeer = (ActivePeer) peerListIterator.next(); 
-					
-					
-						response += "RFC " + currentRfc.rfcNum + " " + currentRfc.title + " " + currentRfc.host + " " + currentPeer.listeningPort + '\n';
+					response += "RFC " + currentRfc.rfcNum + " " + currentRfc.title + " " + currentRfc.host + " " + currentPeer.listeningPort + '\n';
 						break;
 				}
 			}
 		return (response_line_1 +"\n" + response + END_OF_PACKET);
 		}
 		
-		
-		
-		
-
-
 	// Adds the new peer to the ActivePeers list
 	// This method is called when the listening socket receives a new peer
 	// Adds peer to ActivePeers
 	public void addPeer(String packet) {
 
-		String packetLines[] = packet.split("\\n");
+		String packetLines[] = packet.split("\n");
 		//System.out.println(packetLines[1]);
 		//System.out.println(packetLines[2]);
 		
@@ -312,14 +313,27 @@ public class Server {
 		
 		System.out.println("PeerList looks like this now:- \n");
 		System.out.println(peerList.toString());
-	}
-
-	// Removes peer from peer list
-	// emoves all his RFCs from the index
-	public void RemovePeer()
-	{
 		
 	}
+
+	public void deletePeer(String packet) {
+
+		String packetLines[] = packet.split("\n");
+		//System.out.println(packetLines[1]);
+		//System.out.println(packetLines[2]);
+		
+		String hostName = packetLines[1];
+		int port = Integer.valueOf(packetLines[2].trim());
+		ActivePeer p = new ActivePeer(hostName, port);
+		int index = peerList.indexOf(p);
+		peerList.remove(index);
+		System.out.println("PeerList looks like this now:- \n");
+		System.out.println(peerList.toString());
+		
+	}
+	
+	// Removes peer from peer list
+	// Removes all his RFCs from the index
 	
 	/*private class Listening implements Runnable
 	{

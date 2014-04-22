@@ -1,4 +1,5 @@
 import java.io.*;
+import java.io.ObjectInputStream.GetField;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
@@ -10,15 +11,106 @@ public class Peer {
 	String version;
 	int port;
 	
-	
 	static final int SERVER_LISTENING_PORT = 7134;
 	static final String END_OF_PACKET = "END_OF_PACKET\n";
 	public static Socket clientSocket;
+	
+	private class Listener implements Runnable{
+
+		@SuppressWarnings("resource")
+		@Override
+		
+		public void run() {
+		
+			try {
+				ServerSocket listener = new ServerSocket(1111);
+				
+				while(true) {
+				
+					
+					Uploader uploader = new Uploader(listener.accept());
+					Thread uploaderThread = new Thread(uploader);
+					uploaderThread.start(); 
+					
+				}
+				
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
+	private class Uploader implements Runnable {
+		
+		InputStreamReader in;
+		DataOutputStream out;
+		
+		public Uploader(Socket socket) throws Exception {
+			this.out = new DataOutputStream(socket.getOutputStream());
+			this.in = new InputStreamReader(socket.getInputStream());
+			String response = buildResponsePacket();
+			this.out.writeBytes("THIS IS MY FILE");
+		}
+		
+		private String buildResponsePacket() {
+			String packet = version + " 200 OK\n"
+					+ "Date: " + "Thu, 21 Jan 2001 9:23:46 GMT " + "\n"
+					+ "OS: Windows NT 7.6 \n"
+					+ "Last Modified: Thu, 21 Jan 2001 9:23:46 GMT"
+					+ "Content-Length: 12345" //TODO Insert RFC length here
+					+ "Content-Type: text/text"
+					+ "Data Data Data"
+					+ END_OF_PACKET;
+
+		return packet;
+		}
+
+		@Override
+		public void run() {
+		}
+		
+	}
+	
+private class Downloader implements Runnable {
+		
+		
+		InputStreamReader in;
+		DataOutputStream out;
+		
+		public Downloader(Socket socket) throws Exception {
+			this.in = new InputStreamReader(socket.getInputStream());
+			this.out = new DataOutputStream(socket.getOutputStream());
+			String request = buildRequestPacket();
+			this.out.writeBytes("THIS IS MY FILE");
+		}
+		
+		private String buildRequestPacket() {
+			String packet = "GET RFC 814 " + version
+			+ "Host: somehost.ncsu.edu"
+			+ "OS: Windows NT 5.8";
+			
+		return packet;
+		}
+
+		@Override
+		public void run() {
+		}
+		
+	}
+	
+	
 	public Peer(){
 	
 		port = 1111;
 		hostname = "8.8.8.8";
-		version = "P2P-CI/1.0";		
+		version = "P2P-CI/1.0";	
+		
+		Listener l = new Listener();
+		Thread listenerThread = new Thread(l);
+		listenerThread.start();
 	}
 
 	public void publishInfo(int RFCNum)
@@ -127,6 +219,7 @@ public class Peer {
 		System.out.println("FROM SERVER:\n" + response+ "\n");
 		
 		//clientSocket.close();
+		
 	}
 	
 	public void readRfcReqList() throws Exception
@@ -153,8 +246,7 @@ public class Peer {
 	
 	public void contactServer() throws Exception{
 		//Open a talking port
-		
-		
+				
 		//Send 3 main attributes
 		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 		
@@ -254,8 +346,35 @@ public class Peer {
 	}
 	
 
+	public String getRfc(String hostname,String rfcnum)
+	{
+		System.out.println("This method is being called \n");
+	
+		String packet = "GET RFC " + rfcnum + " " + this.version + "\n"
+				+ "Host: " + hostname + "\n"
+				//+ "Port: " + this.port  + "\n"
+				//+ "Title: " + rfcTitle + "\n"
+				+ "OS : WINDOWS 8 \n"
+				+ END_OF_PACKET;
+		System.out.println(packet);
+		return packet;
+		
+		// Contact the peer and download the file. 
+	}
+	
 	public void closeConnectionToServer() throws Exception
 	{
+		//String message = "CLOSE" + END_OF_PACKET + "\n";
+		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+		//System.out.println(message);
+		//outToServer.writeBytes(message);
+				
+		String packet = "CLOSE " + "\n" + hostname + "\n"
+				+ port + "\n"
+				+ version + "\n"
+				+ END_OF_PACKET;
+		
+		outToServer.writeBytes(packet);
 		clientSocket.close();
 	}
 	
@@ -270,7 +389,7 @@ public class Peer {
 		
 		do
 		{
-		System.out.println("Select an option between 1 and 5 for the below actions \n 1. Inform server of active status \n 2. Inform the server about all the stored RFCs(ADD) \n 3. Request peers having particular RFC (LOOKUP) \n 4. List the whole index of RFCs from the server (LIST) \n 5. Close connection to the server. \n ");
+		System.out.println("Select an option between 1 and 5 for the below actions \n 1. Inform server of active status \n 2. Inform the server about all the stored RFCs(ADD) \n 3. Request peers having particular RFC (LOOKUP) \n 4. List the whole index of RFCs from the server (LIST) \n 5. Get RFC from a particular peer \n 6. Close connection to the server. \n ");
 			
 		//String s = br.readLine();
 		
@@ -295,11 +414,27 @@ public class Peer {
 		case 4:
 			p1.requestRfcList();   // Sends a list request to the server
 			break;
+		
 		case 5:
+			System.out.println("Enter the peer hostname \n");
+			String hostname = br.readLine();
+			System.out.println("Enter the rfc num: \n"); 
+			String portnum = br.readLine();
+			String request = p1.getRfc(hostname, portnum);
+			/*Socket dwnldSocket;
+			
+			//Downloader d = new Downloader(.accept());
+			Thread downloaderThread = new Thread(d);
+			downloaderThread.start(); */
+			
+			break;
+		
+		case 6:
 			System.out.println("Connection closed");
 			p1.closeConnectionToServer();
 			//System.exit();
 			return;
+		
 		default:
 			System.out.println("Please enter a valid option: \n");
 			break;
