@@ -1,4 +1,5 @@
 import java.io.*;
+import java.io.ObjectInputStream.GetField;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
@@ -9,7 +10,6 @@ public class Peer {
 	String hostname;
 	String version;
 	int port;
-	
 	
 	static final int SERVER_LISTENING_PORT = 7134;
 	static final String END_OF_PACKET = "END_OF_PACKET\n";
@@ -127,6 +127,7 @@ public class Peer {
 		System.out.println("FROM SERVER:\n" + response+ "\n");
 		
 		//clientSocket.close();
+		
 	}
 	
 	public void readRfcReqList() throws Exception
@@ -153,8 +154,7 @@ public class Peer {
 	
 	public void contactServer() throws Exception{
 		//Open a talking port
-		
-		
+				
 		//Send 3 main attributes
 		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 		
@@ -254,8 +254,37 @@ public class Peer {
 	}
 	
 
+	public void getRfc(String hostname,String rfcnum)
+	{
+		System.out.println("This method is being called \n");
+	
+		String packet = "GET RFC " + rfcnum + " " + this.version + "\n"
+				+ "Host: " + hostname + "\n"
+				//+ "Port: " + this.port  + "\n"
+				//+ "Title: " + rfcTitle + "\n"
+				+ "OS : WINDOWS 8 \n"
+				+ END_OF_PACKET;
+		System.out.println(packet);
+		
+		// Contact the peer and download the file. 
+	}
+	
 	public void closeConnectionToServer() throws Exception
 	{
+		//String message = "CLOSE" + END_OF_PACKET + "\n";
+		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+		//System.out.println(message);
+		//outToServer.writeBytes(message);
+		
+		
+		
+		
+		String packet = "CLOSE " + "\n" + hostname + "\n"
+				+ port + "\n"
+				+ version + "\n"
+				+ END_OF_PACKET;
+		
+		outToServer.writeBytes(packet);
 		clientSocket.close();
 	}
 	
@@ -270,7 +299,7 @@ public class Peer {
 		
 		do
 		{
-		System.out.println("Select an option between 1 and 5 for the below actions \n 1. Inform server of active status \n 2. Inform the server about all the stored RFCs(ADD) \n 3. Request peers having particular RFC (LOOKUP) \n 4. List the whole index of RFCs from the server (LIST) \n 5. Close connection to the server. \n ");
+		System.out.println("Select an option between 1 and 5 for the below actions \n 1. Inform server of active status \n 2. Inform the server about all the stored RFCs(ADD) \n 3. Request peers having particular RFC (LOOKUP) \n 4. List the whole index of RFCs from the server (LIST) \n 5. Get RFC from a particular peer \n 6. Close connection to the server. \n ");
 			
 		//String s = br.readLine();
 		
@@ -295,11 +324,21 @@ public class Peer {
 		case 4:
 			p1.requestRfcList();   // Sends a list request to the server
 			break;
+		
 		case 5:
+			System.out.println("Enter the peer hostname \n");
+			String hostname = br.readLine();
+			System.out.println("Enter the rfc num: \n"); 
+			String portnum = br.readLine();
+			p1.getRfc(hostname, portnum);
+			break;
+		
+		case 6:
 			System.out.println("Connection closed");
 			p1.closeConnectionToServer();
 			//System.exit();
 			return;
+		
 		default:
 			System.out.println("Please enter a valid option: \n");
 			break;
