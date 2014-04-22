@@ -14,22 +14,22 @@ public class Server {
 	static final String END_OF_PACKET = "END_OF_PACKET\n";
 	static final String version = "P2P-CI/1.0";
 
-		static List<ActivePeer> peerList = new LinkedList<ActivePeer>();
+	static List<ActivePeer> peerList = new LinkedList<ActivePeer>();
 	static List<Rfc>index = new LinkedList<Rfc>();
-	
-	
+
+
 	public static void main(String args[]) throws Exception {
-		
-			System.out.println("Server");
-	       /* if(args.length != 1) {
+
+		System.out.println("Server");
+		/* if(args.length != 1) {
 	            System.out.println("Server usage: Server #port");
 	            System.exit(-1);
 	        } */
 
-	        ServerSocket listener = new ServerSocket(Integer.parseInt(args[0]));
-	        while(true) {
-	            new CentralServer(listener.accept()).start();
-	        }
+		ServerSocket listener = new ServerSocket(Integer.parseInt(args[0]));
+		while(true) {
+			new CentralServer(listener.accept()).start();
+		}
 	}
 	private static class ActivePeer {
 		String hostName;
@@ -39,11 +39,11 @@ public class Server {
 			hostName = host;
 			listeningPort = pnum;
 		}
-		
-	    @Override
-	    public String toString() {
-	        return hostName + ": " + listeningPort + '\n';
-	    }
+
+		@Override
+		public String toString() {
+			return hostName + ": " + listeningPort + '\n';
+		}
 	}
 
 	private static class Rfc {
@@ -56,11 +56,11 @@ public class Server {
 			this.title = title;
 			this.setHost(host);
 		}
-		
-	    @Override
-	    public String toString() {
-	        return getRfcNum() + " \"" + title + "\" at " + getHost() + "\n";
-	    }
+
+		@Override
+		public String toString() {
+			return getRfcNum() + " \"" + title + "\" at " + getHost() + "\n";
+		}
 
 		/**
 		 * @return the host
@@ -92,65 +92,67 @@ public class Server {
 	}
 	private static class CentralServer extends Thread
 	{
-		
-	//	LinkedList<ActivePeer> peerList;
-	//	LinkedList<Rfc> index;
-	
-	private Socket socket;
-    BufferedReader in;
-    DataOutputStream out;
-	// Constructor
-	public CentralServer(Socket sock) {
-		
-		System.out.println("A new Thread \n \n");
-		 this.socket = sock;
-         try {
-             this.in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
-             this.out = new DataOutputStream(this.socket.getOutputStream()); 
-         } catch (IOException e) {
-             e.printStackTrace();
-         }
-	}
+
+		//	LinkedList<ActivePeer> peerList;
+		//	LinkedList<Rfc> index;
+
+		private Socket socket;
+		BufferedReader in;
+		DataOutputStream out;
+		// Constructor
+		public CentralServer(Socket sock) {
+
+			System.out.println("A new Thread \n \n");
+			this.socket = sock;
+			try {
+				this.in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+				this.out = new DataOutputStream(this.socket.getOutputStream()); 
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 		//version = "P2P-CI/1.0"
-         
-         @Override
-         public void run() {
-             System.out.println("Hi.. This is a new connection for a peer");
 
-             try {
-                 startListening();
-             } catch (Exception e) {
-                 e.printStackTrace();
-             } finally {
-                 try {
-                     socket.close();
-                 } catch (IOException e) {
-                     e.printStackTrace();
-                 }
-             }
-         }
-	
+		@Override
+		public void run() {
+			System.out.println("Hi.. This is a new connection for a peer");
 
-	public void startListening() throws Exception {
-		//@SuppressWarnings("resource")
-		// ServerSocket welcomeSocket = new ServerSocket(LISTENINGPORT);
+			try {
+				startListening();
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				try {
+					socket.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 
-		// Communicates to one socket in one iteration.
-		// Seems to be atomic for that session of communication. 
-		//while (true) {
-		//	Socket connectionSocket = welcomeSocket.accept();
-		//	BufferedReader inFromClient = new BufferedReader(
-		//			new InputStreamReader(connectionSocket.getInputStream()));
-			
-			
-		//	DataOutputStream  outToClient = 
-		//             new DataOutputStream(connectionSocket.getOutputStream()); 
-			
-			
+
+		@SuppressWarnings("deprecation")
+		public void startListening() throws Exception {
+			//@SuppressWarnings("resource")
+			// ServerSocket welcomeSocket = new ServerSocket(LISTENINGPORT);
+
+			// Communicates to one socket in one iteration.
+			// Seems to be atomic for that session of communication. 
+			//while (true) {
+			//	Socket connectionSocket = welcomeSocket.accept();
+			//	BufferedReader inFromClient = new BufferedReader(
+			//			new InputStreamReader(connectionSocket.getInputStream()));
+
+
+			//	DataOutputStream  outToClient = 
+			//             new DataOutputStream(connectionSocket.getOutputStream()); 
+
+
 			// In one session of communication, reads all the available lines in one packet. 
-			
+
 			while(true)
 			{
+<<<<<<< HEAD
 			String clientSentence = null;
 			String request = "";
 			String response = "";
@@ -185,16 +187,121 @@ public class Server {
 				this.out.writeBytes(response);
 				this.out.flush();
 				continue;
+=======
+				String clientSentence = null;
+				String request = "";
+				String response = "";
+
+				while (!((clientSentence = this.in.readLine().trim()).equals(END_OF_PACKET.trim()))){
+					request += clientSentence + "\n";
+				}
+
+				if (request.substring(0, 3).equals("Hi!")){
+					System.out.println("");
+					System.out.println(request);  // Prints Hi I'm .....
+					response = "This is default 'HI' response";
+					addPeer(request);
+					continue;
+					//outToClient.writeBytes(response);
+				}
+
+				else if (request.substring(0, 3).equals("ADD")){
+					//response = "This is default ADD response.";
+					//System.out.println("The peer is adding all it's RFCs to the RFC List in the server one by one \n");
+					addRfc(request);
+					continue;
+					//outToClient.writeBytes(response);
+				}
+
+				else if (request.substring(0, 6).equals("LOOKUP")){
+
+					response = "This is default LOOKUP response.\n";
+					response = lookupRfc(request);
+					//System.out.print(response);
+					this.out.writeBytes(response);
+					this.out.flush();
+					continue;
+				}
+
+				else if (request.substring(0, 4).equals("LIST")){
+					response = getIndex(request);
+					//System.out.println("This is the calling method");
+					System.out.println(response);
+					this.out.writeBytes(response + '\n');
+					this.out.flush();
+
+				}
+
+				else if(request.substring(0,5).equals("CLOSE"))
+				{
+					System.out.println("The connection has been closed \n");
+					String packet = "";
+
+					deletePeer(request);
+					//this.socket.close();
+					this.stop();
+					//Close this thread here!
+					//socket.close();
+				}
+
+				else
+				{
+					System.out.println("Server cannot recognize such a message \n");
+				}
+
+>>>>>>> master
 			}
-			
-			else if (request.substring(0, 4).equals("LIST")){
-				response = getIndex(request);
-				//System.out.println("This is the calling method");
-				System.out.println(response);
-				this.out.writeBytes(response + '\n');
-				this.out.flush();
-				
+
+
+		}
+
+		public void addRfc(String packet) {
+
+			String packetLines[] = packet.split("\\n");
+
+			String rfcNumString = packetLines[0].substring(8, 11);
+			int rfcNum = Integer.valueOf(rfcNumString);
+
+			String host = packetLines[1].substring(6);
+			String title = packetLines[3].substring(7);
+
+			Rfc rfc = new Rfc(rfcNum, title, host);
+			index.add(rfc);
+			System.out.println("Index looks like this now:- \n");
+			System.out.println(index.toString());
+		}
+
+
+
+		private String lookupRfc(String packet) 
+		{
+			//System.out.println(packet);
+			String packetLines[] = packet.split("\\n");
+			String rfcNumString = packetLines[0].split(" ")[2];
+			int rfcNum = Integer.valueOf(rfcNumString);
+
+			String response = version + " 200 OK\n";
+
+			ListIterator<Rfc> indexIterator = index.listIterator();
+
+			while(indexIterator.hasNext()){
+				Rfc currentRfc = (Rfc) indexIterator.next(); 
+				if (currentRfc.getRfcNum() == rfcNum){
+					//If rfc is present in index, get its host's listening port
+					ListIterator<ActivePeer> peerListIterator = peerList.listIterator();
+					while(peerListIterator.hasNext()){
+						ActivePeer currentPeer = (ActivePeer) peerListIterator.next(); 
+						if (currentPeer.hostName.equals(currentRfc.host))
+						{
+							response += "RFC " + currentRfc.rfcNum + " " + currentRfc.title + " " + currentRfc.host + " " + currentPeer.listeningPort + '\n';
+							//break;
+						}
+
+					}
+
+				}
 			}
+<<<<<<< HEAD
 			
 			else if(request.substring(0,5).equals("CLOSE"))
 			{
@@ -206,73 +313,75 @@ public class Server {
 			}
 			
 			else
+=======
+
+			if(response.split("\n").length==1)
+>>>>>>> master
 			{
-				System.out.println("Server cannot recognize such a message \n");
+				response = version + " 404 Not Found\n";
 			}
-	
-			}
-		
 
-	}
-	
-	public void addRfc(String packet) {
-		
-		String packetLines[] = packet.split("\\n");
+			response += END_OF_PACKET;
 
-		String rfcNumString = packetLines[0].substring(8, 11);
-		int rfcNum = Integer.valueOf(rfcNumString);
-		
-		String host = packetLines[1].substring(6);
-		String title = packetLines[3].substring(7);
+			//System.out.println(response);
+			return response;
+		}
 
-		Rfc rfc = new Rfc(rfcNum, title, host);
-		index.add(rfc);
-		System.out.println("Index looks like this now:- \n");
-		System.out.println(index.toString());
-	}
-	
-	
-		
-	private String lookupRfc(String packet) 
-	{
-		//System.out.println(packet);
-		String packetLines[] = packet.split("\\n");
-		String rfcNumString = packetLines[0].split(" ")[2];
-		int rfcNum = Integer.valueOf(rfcNumString);
-		
-		String response = version + " 200 OK\n";
-		
-		ListIterator<Rfc> indexIterator = index.listIterator();
+		private String getIndex(String packet) {
+			System.out.println("This List method is being called");		
+			String response = "";
+			String response_line_1 = "";
 
-		while(indexIterator.hasNext()){
-			Rfc currentRfc = (Rfc) indexIterator.next(); 
-			if (currentRfc.getRfcNum() == rfcNum){
-				//If rfc is present in index, get its host's listening port
+			ListIterator<Rfc> indexIterator = index.listIterator();
+			//if_server_is_active 
+			//{
+			response_line_1 += version + " 200 OK \n";
+			//}
+			while(indexIterator.hasNext()){
+				Rfc currentRfc = (Rfc) indexIterator.next(); 
+				// Get host and listening port of the Rfc number present in the peer list
 				ListIterator<ActivePeer> peerListIterator = peerList.listIterator();
 				while(peerListIterator.hasNext()){
 					ActivePeer currentPeer = (ActivePeer) peerListIterator.next(); 
+<<<<<<< HEAD
 					if (currentPeer.hostName.equals(currentRfc.host))
 					{
 						response += "RFC " + currentRfc.rfcNum + " " + currentRfc.title + " " + currentRfc.host + " " + currentPeer.listeningPort + '\n';
 						//break;
 					}
 				System.out.println(response);
+=======
+					response += "RFC " + currentRfc.rfcNum + " " + currentRfc.title + " " + currentRfc.host + " " + currentPeer.listeningPort + '\n';
+					break;
+>>>>>>> master
 				}
-				
 			}
+			return (response_line_1 +"\n" + response + END_OF_PACKET);
 		}
-		
-		if(response.split("\n").length==1)
-		{
-			response = version + " 404 Not Found\n";
+
+		// Adds the new peer to the ActivePeers list
+		// This method is called when the listening socket receives a new peer
+		// Adds peer to ActivePeers
+		public void addPeer(String packet) {
+
+			String packetLines[] = packet.split("\n");
+			//System.out.println(packetLines[1]);
+			//System.out.println(packetLines[2]);
+
+			String hostName = packetLines[1];
+			int port = Integer.valueOf(packetLines[2].trim());
+
+			ActivePeer newPeer = new ActivePeer(hostName, port);
+			peerList.add(newPeer);
+
+			System.out.println("PeerList looks like this now:- \n");
+			System.out.println(peerList.toString());
+
 		}
-		
-		response += END_OF_PACKET;
 
-		//System.out.println(response);
-		return response;
-	}
+		public void deletePeer(String packet) {
 
+<<<<<<< HEAD
 	private String getIndex(String packet) {
 		System.out.println("This List method is being called");		
 		String response = "";
@@ -291,10 +400,26 @@ public class Server {
 					ActivePeer currentPeer = (ActivePeer) peerListIterator.next(); 
 					response += "RFC " + currentRfc.rfcNum + " " + currentRfc.title + " " + currentRfc.host + " " + currentPeer.listeningPort + '\n';
 						break;
+=======
+			String packetLines[] = packet.split("\n");
+			//System.out.println(packetLines[1]);
+			//System.out.println(packetLines[2]);
+
+			String hostName = packetLines[1];
+			int port = Integer.valueOf(packetLines[2].trim());
+
+			for (ActivePeer p : peerList){
+				if (p.hostName.equals(hostName)){
+					peerList.remove(p);
+>>>>>>> master
 				}
 			}
-		return (response_line_1 +"\n" + response + END_OF_PACKET);
+
+			System.out.println("PeerList looks like this now:- \n");
+			System.out.println(peerList.toString());
+
 		}
+<<<<<<< HEAD
 		
 	// Adds the new peer to the ActivePeers list
 	// This method is called when the listening socket receives a new peer
@@ -336,21 +461,28 @@ public class Server {
 	// Removes all his RFCs from the index
 	
 	/*private class Listening implements Runnable
+=======
+
+		// Removes peer from peer list
+		// Removes all his RFCs from the index
+
+		/*private class Listening implements Runnable
+>>>>>>> master
 	{
 
 		@Override
 		public void run() {
 			// TODO Auto-generated method stub
-			
-			
+
+
 		}
-		
+
 	} */
 	}
-	
-	
-    
-		
+
+
+
+
 }
 
 

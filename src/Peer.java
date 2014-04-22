@@ -346,7 +346,9 @@ private class Downloader implements Runnable {
 	}
 	
 
+
 	public String getRfc(String hostname,String rfcnum)
+
 	{
 		System.out.println("This method is being called \n");
 	
@@ -368,7 +370,6 @@ private class Downloader implements Runnable {
 		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 		//System.out.println(message);
 		//outToServer.writeBytes(message);
-				
 		String packet = "CLOSE " + "\n" + hostname + "\n"
 				+ port + "\n"
 				+ version + "\n"
