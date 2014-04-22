@@ -27,7 +27,7 @@ public class Peer {
 			try {
 				System.out.println("...Shshshshsh.... I secretly listening too...");
 				
-				ServerSocket listener = new ServerSocket((int) (Math.random() * 65536));
+				ServerSocket listener = new ServerSocket(2222);
 				this.socket = listener.accept();
 				this.in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
 				this.out = new DataOutputStream(this.socket.getOutputStream()); 
@@ -88,29 +88,38 @@ public class Peer {
 
 		InputStreamReader in;
 		DataOutputStream out;
+		Socket peerClientSocket;
+		int peerServerPort;
+		String peerServerName;
 
-		public Downloader(Socket socket) throws Exception {
-			this.in = new InputStreamReader(socket.getInputStream());
-			this.out = new DataOutputStream(socket.getOutputStream());
+		public Downloader(String hostname, String port) throws Exception {
+			
+			peerServerPort = Integer.parseInt(port); //Is to be input from user
+			peerServerName = hostname; //Is to be input from user
+			
+			peerClientSocket = new Socket(hostname,peerServerPort);
+			
+			this.in = new InputStreamReader(peerClientSocket.getInputStream());
+			this.out = new DataOutputStream(peerClientSocket.getOutputStream());
 			
 		}
-
-		private String buildRequestPacket() {
-			String packet = "GET RFC 814 " + version
-					+ "Host: somehost.csc.ncsu.edu"
-					+ "OS: Windows NT 5.8";
-
-			return packet;
-		}
-
+		
 		@Override
 		public void run() {
-			String request = buildRequestPacket();
+			String request = buildRequestPacket(this.peerServerName, this.peerServerPort);
 			try {
 				this.out.writeBytes(request);
 			} catch (IOException e) {
 				e.printStackTrace(System.out);
 			}
+		}
+		
+		private String buildRequestPacket(String hostname, int port) {
+			String packet = "GET RFC 814 " + version
+					+ "Host: " + hostname
+					+ "OS: Windows NT 5.8";
+
+			return packet;
 		}
 
 	}
@@ -361,14 +370,11 @@ public class Peer {
 	}
 
 
-	public String getRfc(String hostname,String rfcnum)
+	public String getRfc(String peerHostname,String rfcNum, String peerPort)
 	{
-		System.out.println("This method is being called \n");
 
-		String packet = "GET RFC " + rfcnum + " " + this.version + "\n"
-				+ "Host: " + hostname + "\n"
-				//+ "Port: " + this.port  + "\n"
-				//+ "Title: " + rfcTitle + "\n"
+		String packet = "GET RFC " + rfcNum + " " + this.version + "\n"
+				+ "Host: " + peerHostname + "\n"
 				+ "OS : WINDOWS 8 \n"
 				+ END_OF_PACKET;
 		System.out.println(packet);
@@ -432,10 +438,12 @@ public class Peer {
 
 				case 5:
 					System.out.println("Enter the peer hostname \n");
-					String hostname = br.readLine();
+					String peerHostname = br.readLine();
 					System.out.println("Enter the rfc num: \n"); 
-					String portnum = br.readLine();
-					String request = p1.getRfc(hostname, portnum);
+					String neededRfcNum = br.readLine();
+					System.out.println("Enter the peer's listening port: \n"); 
+					String peerPort = br.readLine();
+					String request = p1.getRfc(peerHostname, neededRfcNum, peerPort);
 					/*Socket dwnldSocket;
 
 			//Downloader d = new Downloader(.accept());
