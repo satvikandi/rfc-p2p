@@ -5,6 +5,7 @@ import java.net.Socket;
 import java.util.Scanner;
 
 
+
 public class Peer {
 	
 	String hostname;
@@ -17,26 +18,25 @@ public class Peer {
 	
 	private class Listener implements Runnable{
 
-		@SuppressWarnings("resource")
 		@Override
 		
-		public void run() {
 		
+			public void run() {
+		
+			
+			
 			try {
 				ServerSocket listener = new ServerSocket(1111);
 				
 				while(true) {
-				
 					
 					Uploader uploader = new Uploader(listener.accept());
 					Thread uploaderThread = new Thread(uploader);
-					uploaderThread.start(); 
+					uploaderThread.start();
 					
 				}
-				
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				
 				e.printStackTrace();
 			}
 		}
@@ -89,7 +89,7 @@ private class Downloader implements Runnable {
 		
 		private String buildRequestPacket() {
 			String packet = "GET RFC 814 " + version
-			+ "Host: somehost.ncsu.edu"
+			+ "Host: somehost.csc.ncsu.edu"
 			+ "OS: Windows NT 5.8";
 			
 		return packet;
@@ -106,11 +106,7 @@ private class Downloader implements Runnable {
 	
 		port = 1111;
 		hostname = "8.8.8.8";
-		version = "P2P-CI/1.0";	
-		
-		Listener l = new Listener();
-		Thread listenerThread = new Thread(l);
-		listenerThread.start();
+		version = "P2P-CI/1.0";		
 	}
 
 	public void publishInfo(int RFCNum)
@@ -346,9 +342,7 @@ private class Downloader implements Runnable {
 	}
 	
 
-
 	public String getRfc(String hostname,String rfcnum)
-
 	{
 		System.out.println("This method is being called \n");
 	
@@ -370,6 +364,7 @@ private class Downloader implements Runnable {
 		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 		//System.out.println(message);
 		//outToServer.writeBytes(message);
+				
 		String packet = "CLOSE " + "\n" + hostname + "\n"
 				+ port + "\n"
 				+ version + "\n"
